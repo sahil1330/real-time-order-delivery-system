@@ -13,15 +13,15 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
-const loginSchema = z.object({
-  identifier: z.string().email("Please enter a valid email address or username"),
+const deliveryLoginSchema = z.object({
+  identifier: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
   remember: z.boolean().optional(),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type DeliveryLoginFormValues = z.infer<typeof deliveryLoginSchema>;
 
-export default function LoginPage() {
+export default function DeliveryLoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
@@ -30,12 +30,16 @@ export default function LoginPage() {
   useEffect(() => {
     if (status === "authenticated") {
       const userRole = session.user.role;
-      if (userRole === "admin") {
-        router.push("/admin");
-      } else if (userRole === "delivery") {
+      // If already logged in as delivery person, go to delivery dashboard
+      if (userRole === "delivery") {
         router.push("/delivery");
+      } else if (userRole === "admin") {
+        // Admin can access everything
+        router.push("/admin");
       } else {
-        router.push("/customer");
+        // If logged in as regular customer, go to unauthorized page
+        // since this login is only for delivery personnel
+        router.push("/unauthorized");
       }
     }
   }, [status, session, router]);
@@ -44,8 +48,8 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<DeliveryLoginFormValues>({
+    resolver: zodResolver(deliveryLoginSchema),
     defaultValues: {
       identifier: "",
       password: "",
@@ -53,13 +57,14 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: DeliveryLoginFormValues) => {
     setIsLoading(true);
     try {
       const result = await signIn("credentials", {
         identifier: data.identifier,
         password: data.password,
         redirect: false,
+        callbackUrl: "/delivery", // Add callbackUrl to indicate this is a delivery login
       });
 
       if (result?.error) {
@@ -67,10 +72,23 @@ export default function LoginPage() {
           description: result.error,
         });
       } else {
-        // Successful login - will redirect in the useEffect
-        toast("Login Successful", {
-          description: "Welcome back!",
-        });
+        // Check if the user is a delivery person
+        const session = await fetch("/api/auth/session");
+        const sessionData = await session.json();
+        
+        if (sessionData?.user?.role !== "delivery") {
+          toast("Access Denied", {
+            description: "This login is only for delivery personnel. Please use the regular login page.",
+          });
+          // Sign the user out
+          signIn("", { callbackUrl: "/unauthorized" });
+        } else {
+          toast("Login Successful", {
+            description: "Welcome back, delivery partner!",
+          });
+          // Redirect to delivery dashboard
+          router.push("/delivery");
+        }
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -95,7 +113,10 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
-      <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">Delivery Partner Login</h1>
+      <p className="text-center text-gray-600 mb-6">
+        Sign in to manage your deliveries and earnings
+      </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
@@ -103,7 +124,7 @@ export default function LoginPage() {
           <Input
             id="email"
             type="email"
-            placeholder="Enter your email or username"
+            placeholder="Enter your email"
             {...register("identifier")}
           />
           {errors.identifier && (
@@ -140,63 +161,23 @@ export default function LoginPage() {
         </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Signing in..." : "Sign In"}
+          {isLoading ? "Signing in..." : "Sign In as Delivery Partner"}
         </Button>
-      </form>      <div className="mt-6 text-center">
+      </form>
+
+      <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            Sign up
-          </Link>
-        </p>
-        <p className="text-sm text-gray-600 mt-2">
-          Delivery partner?{" "}
-          <Link href="/delivery/login" className="text-blue-600 hover:underline">
-            Sign in here
+          Not registered as a delivery partner?{" "}
+          <Link href="/delivery/register" className="text-blue-600 hover:underline">
+            Register now
           </Link>
         </p>
       </div>
 
-      <div className="mt-8">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">
-              Or continue with
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              setIsLoading(true);
-              signIn("google", { callbackUrl: "/" });
-            }}
-            disabled={isLoading}
-          >
-            <svg
-              className="mr-2 h-4 w-4"
-              aria-hidden="true"
-              focusable="false"
-              data-prefix="fab"
-              data-icon="google"
-              role="img"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 488 512"
-            >
-              <path
-                fill="currentColor"
-                d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"
-              />
-            </svg>
-            Sign in with Google
-          </Button>
-        </div>
+      <div className="mt-6 text-center">
+        <Link href="/login" className="text-sm text-blue-600 hover:underline">
+          Regular customer login
+        </Link>
       </div>
     </div>
   );

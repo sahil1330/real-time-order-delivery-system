@@ -7,9 +7,9 @@ export interface IProduct extends Document {
   price: number;
   category: string;
   stock: number;
-  images: string[];
+  image: string;
   ratings: number;
-  reviews: number;
+  brand: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,17 +36,17 @@ const productSchema = new Schema<IProduct>(
       type: Number,
       required: true,
     },
-    images: {
-      type: [String],
+    image: {
+      type: String,
       required: true,
     },
     ratings: {
       type: Number,
       default: 0,
     },
-    reviews: {
-      type: Number,
-      default: 0,
+    brand: {
+      type: String,
+      default: "",
     },
     createdAt: {
       type: Date,
@@ -60,7 +60,7 @@ const productSchema = new Schema<IProduct>(
   { timestamps: true }
 );
 
-const Product =
+const ProductModel =
   (mongoose.models.Product as mongoose.Model<IProduct>) ||
   mongoose.model<IProduct>("Product", productSchema);
-export default Product;
+export default ProductModel;

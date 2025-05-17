@@ -1,107 +1,292 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Button } from "@/components/ui/button";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
-
+import { Minus, Plus, ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { User } from "next-auth";
+import Link from "next/link";
+import { IProduct } from "@/models/product.model";
+import HomePageSkeleton from "@/components/skeltons/HomePageSkeleton";
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isUserSession, setIsUserSession] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [cart, setCart] = useState<any[]>([]);
+  const [productsInCart, setProductsInCart] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [products, setProducts] = useState<IProduct[]>([]);
+  const { data: session } = useSession();
+  console.log("User: ", session?.user);
+  useEffect(() => {
+    if (session) {
+      setIsUserSession(true);
+      setUser(session.user);
+    }
+  }, [session]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <Button onClick={() => signOut()}>Sign Out</Button>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    (async () => {
+      fetchProducts();
+      if (session?.user._id) {
+         await fetchCart();
+        }
+    })();
+  }, [session?.user._id]);
+  const fetchCart = async () => {
+    try {
+      const response = await fetch("/api/products/fetchCart");
+      if (!response.ok) {
+        throw new Error("Failed to fetch cart");
+      }
+      const data = await response.json();
+      console.log("Cart data: ", data);
+      setCart(data);
+      setProductsInCart(data.map((item: any) => item.product._id));
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+      toast.error("Failed to fetch cart");
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/products/get-products");
+      if (!response.ok) {
+        throw new Error("Failed to fetch products");
+      }
+      const data = await response.json();
+      console.log("Products data: ", data);
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      toast.error("Failed to fetch products");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const addProductToCart = async (productId: string) => {
+    try {
+      if (productsInCart.includes(productId)) {
+        setCart((prev) =>
+          prev.map((item) =>
+            item.product._id === productId
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        );
+      } else {
+        // Add product to productsInCart state to reflect it's now in cart
+        setProductsInCart((prev) => [...prev, productId]);
+      }
+
+      if (!session?.user) {
+        toast.error("Please login to add products to cart");
+        return;
+      }
+
+      // Make API call to update the cart in the database
+      const response = await fetch("/api/products/add-product-to-cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update cart");
+      }
+
+      const updatedCart = await response.json();
+      setCart(updatedCart);
+      console.log("Updated cart: ", updatedCart);
+      toast.success("Product added to cart");
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+      toast.error("Failed to add product to cart");
+    }
+  };
+
+  const removeFromCart = async (productId: string) => {
+    try {
+      if (
+        cart.some(
+          (item) =>
+            item.product._id === productId &&
+            (item.quantity === 1 || item.quantity === 0)
+        )
+      ) {
+        // Remove product from productsInCart state
+        setProductsInCart((prev) => prev.filter((id) => id !== productId));
+        setCart((prev) =>
+          prev.filter((item) => item.product._id !== productId)
+        );
+      } else {
+        setCart((prev) =>
+          prev.map((item) =>
+            item.product._id === productId
+              ? { ...item, quantity: item.quantity - 1 }
+              : item
+          )
+        );
+      }
+      if (productsInCart.includes(productId)) {
+        setCart((prev) =>
+          prev.map((item) =>
+            item.product._id === productId
+              ? { ...item, quantity: item.quantity - 1 }
+              : item
+          )
+        );
+
+        console.log("Products in cart: ", productsInCart);
+      }
+      const response = await fetch("/api/products/remove-product-from-cart", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to remove product from cart");
+      }
+
+      const updatedCart = await response.json();
+      setCart(updatedCart);
+      console.log("Updated cart after removal: ", updatedCart);
+      toast.success("Product removed from cart");
+    } catch (error) {
+      console.error("Error removing product from cart:", error);
+      toast.error("Failed to remove product from cart");
+    }
+  };
+
+  return (
+    <div>
+      {isUserSession ? (
+        <header className="bg-white shadow">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 className="text-xl font-bold text-gray-900">
+              Customer Dashboard
+            </h1>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-700">
+                <span>Welcome, </span>
+                <span className="font-medium">{user?.name}</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => signOut({ callbackUrl: "/login" })}
+              >
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </header>
+      ) : (
+        <header className="bg-white shadow">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 className="text-xl font-bold text-gray-900">
+              Customer Dashboard
+            </h1>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-700">
+                <span>Welcome, </span>
+                <span className="font-medium">Guest</span>
+              </div>
+              <Link href={"/login"}>
+                <Button variant="outline" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </header>
+      )}
+
+      {isLoading ? (
+        <HomePageSkeleton />
+      ) : (
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((product) => (
+              <div key={product._id} className="bg-white shadow rounded-lg p-6">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  width={200}
+                  height={200}
+                  className="w-full h-auto rounded-lg mb-4"
+                />
+                <h2 className="text-lg font-semibold">{product.name}</h2>
+                <p className="text-gray-600">{product.description}</p>
+                <p className="text-gray-900 font-bold">${product.price}</p>
+                {productsInCart.includes(product._id) ? (
+                  <div className="isolate flex -space-x-px">
+                    <Button
+                      variant="outline"
+                      className="rounded-r-none focus:z-10"
+                      onClick={() => {
+                        removeFromCart(product._id);
+                      }}
+                    >
+                      <Minus className="mr-2" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="rounded-none focus:z-10"
+                    >
+                      {cart.find((item) => item?.product._id === product._id)
+                        ?.quantity || 1}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="rounded-l-none focus:z-10"
+                      onClick={() => {
+                        addProductToCart(product._id);
+                      }}
+                    >
+                      <Plus className="ml-2" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="default"
+                    className="mt-4"
+                    onClick={() => {
+                      addProductToCart(product._id);
+                    }}
+                  >
+                    Add to Cart <ShoppingCart className="ml-2" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </main>
+      )}
+      <footer className="bg-white shadow mt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center">
+          <p className="text-gray-500 text-sm">
+            &copy; 2023 Your Company. All rights reserved.
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
       </footer>
+      <div className="fixed bottom-0 right-0 p-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => signOut({ callbackUrl: "/login" })}
+        >
+          Sign Out
+        </Button>
+      </div>
     </div>
   );
 }

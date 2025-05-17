@@ -1,4 +1,4 @@
-import "next-auth"
+import "next-auth";
 
 declare module "next-auth" {
   interface User {
@@ -6,6 +6,7 @@ declare module "next-auth" {
     role?: string;
     isVerified?: boolean;
     email?: string;
+    name?: string;
     cart?: string[];
   }
 
@@ -15,7 +16,9 @@ declare module "next-auth" {
       role?: string;
       isVerified?: boolean;
       email?: string;
+      name?: string;  
       cart?: string[];
+      token?: string;
     } & DefaultSession["user"];
   }
 }
@@ -25,5 +28,7 @@ declare module "next-auth/jwt" {
     _id: string;
     role?: string;
     isVerified?: boolean;
+    email?: string;
+    name?: string;
   }
 }

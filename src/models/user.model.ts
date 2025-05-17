@@ -6,7 +6,9 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: string;
-  cart: mongoose.Types.ObjectId[] | string[];
+  cart: {
+    products: Array<{ product: mongoose.Types.ObjectId; quantity: number }>;
+  };
   orders: mongoose.Types.ObjectId[] | string[];
   address: string;
   phone: string;
@@ -41,9 +43,18 @@ const userSchema = new Schema<IUser>(
       default: "customer",
     },
     cart: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "Product",
-      default: [],
+      products: [
+        {
+          product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+          },
+          quantity: {
+            type: Number,
+            default: 1,
+          },
+        },
+      ],
     },
     orders: {
       type: [mongoose.Schema.Types.ObjectId],
@@ -82,17 +93,10 @@ const userSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   { timestamps: true }
 );
 
-const UserModel = mongoose.models?.User || mongoose.model<IUser>("User", userSchema);
+const UserModel =
+  mongoose.models?.User || mongoose.model<IUser>("User", userSchema);
 export default UserModel;

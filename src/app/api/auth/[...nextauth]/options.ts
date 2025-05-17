@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import Credentials from "next-auth/providers/credentials";
-import dbConnect from "./lib/connectDb";
-import UserModel from "./models/user.model";
+import UserModel from "@/models/user.model";
+import dbConnect from "@/lib/connectDb";
 import bcrypt from "bcryptjs";
-
-export const { handlers, signIn, signOut, auth } = NextAuth({
+import { NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+export const authOptions: NextAuthConfig = {
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
@@ -20,7 +19,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const newUser = await UserModel.create({
             name: profile.name,
             email: profile.email,
-            profilePicture: profile.picture,
             password,
             isVerified: true,
             role: "customer",
@@ -34,16 +32,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
-        callbackUrl: { label: "Callback URL", type: "text" },
       },
       async authorize(credentials: any): Promise<any> {
         await dbConnect();
         try {
-          console.log("Credentials:", credentials);
+          console.log("Credentials  :", credentials);
           const user = await UserModel.findOne({
             email: credentials?.identifier,
           }).select("+password +isVerified +role +cart");
-          
           console.log("User found:", user);
           if (!user) {
             throw new Error("User not found");
@@ -60,12 +56,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           if (!isPasswordCorrect) {
             throw new Error("Invalid password");
-          }
-          
-          // Check if this login is from the delivery login page and if the user has the right role
-          const isDeliveryLogin = credentials?.callbackUrl?.includes('/delivery');
-          if (isDeliveryLogin && user.role !== 'delivery' && user.role !== 'admin') {
-            throw new Error("Access denied. This login is only for delivery personnel.");
           }
 
           return user;
@@ -91,7 +81,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.isVerified = token.isVerified;
         session.user.email = token.email;
         session.user.cart = token.cart;
-        session.user.name = token.name;
+        session.user.token = token;
       }
       return session;
     },
@@ -110,7 +100,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = userData.role || token.role;
         token.isVerified = userData.isVerified || token.isVerified;
         token.email = userData.email || token.email;
-        token.name = userData.name || token.name;
         // Add redirect path based on user role
         if (userData.role === "admin") {
           token.redirectPath = "/admin";
@@ -147,4 +136,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return baseUrl;
     },
   },
-});
+};

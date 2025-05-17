@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/connectDb";
-import UserModel from "@/app/models/user.model";
+import UserModel from "@/models/user.model";
 import { generateToken } from "@/lib/helpers/jwt";
 import { sendVerificationEmail } from "@/lib/helpers/sendVerificationEmail";
 import { signIn } from "@/auth";
