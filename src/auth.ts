@@ -42,8 +42,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           console.log("Credentials:", credentials);
           const user = await UserModel.findOne({
             email: credentials?.identifier,
-          }).select("+password +isVerified +role +cart");
-          
+          }).select(
+            "-passwordResetToken -passwordResetTokenExpiry -verificationToken -verificationTokenExpiry"
+          );
+
           console.log("User found:", user);
           if (!user) {
             throw new Error("User not found");
@@ -61,11 +63,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!isPasswordCorrect) {
             throw new Error("Invalid password");
           }
-          
+
           // Check if this login is from the delivery login page and if the user has the right role
-          const isDeliveryLogin = credentials?.callbackUrl?.includes('/delivery');
-          if (isDeliveryLogin && user.role !== 'delivery' && user.role !== 'admin') {
-            throw new Error("Access denied. This login is only for delivery personnel.");
+          const isDeliveryLogin =
+            credentials?.callbackUrl?.includes("/delivery");
+          if (
+            isDeliveryLogin &&
+            user.role !== "delivery" &&
+            user.role !== "admin"
+          ) {
+            throw new Error(
+              "Access denied. This login is only for delivery personnel."
+            );
           }
 
           return user;

@@ -10,6 +10,7 @@ import { User } from "next-auth";
 import Link from "next/link";
 import { IProduct } from "@/models/product.model";
 import HomePageSkeleton from "@/components/skeltons/HomePageSkeleton";
+import { useRouter } from "next/navigation";
 export default function Home() {
   const [isUserSession, setIsUserSession] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -18,6 +19,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState<IProduct[]>([]);
   const { data: session } = useSession();
+  const router = useRouter();
   console.log("User: ", session?.user);
   useEffect(() => {
     if (session) {
@@ -30,8 +32,8 @@ export default function Home() {
     (async () => {
       fetchProducts();
       if (session?.user._id) {
-         await fetchCart();
-        }
+        await fetchCart();
+      }
     })();
   }, [session?.user._id]);
   const fetchCart = async () => {
@@ -69,6 +71,11 @@ export default function Home() {
   };
   const addProductToCart = async (productId: string) => {
     try {
+      if (!session?.user) {
+        toast.error("Please login to add products to cart");
+        router.replace("/login");
+        return;
+      }
       if (productsInCart.includes(productId)) {
         setCart((prev) =>
           prev.map((item) =>
@@ -171,9 +178,7 @@ export default function Home() {
       {isUserSession ? (
         <header className="bg-white shadow">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-900">
-              Customer Dashboard
-            </h1>
+            <h1 className="text-xl font-bold text-gray-900">Real Time Order</h1>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-700">
                 <span>Welcome, </span>
@@ -192,9 +197,7 @@ export default function Home() {
       ) : (
         <header className="bg-white shadow">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-900">
-              Customer Dashboard
-            </h1>
+            <h1 className="text-xl font-bold text-gray-900">Real Time Order</h1>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-700">
                 <span>Welcome, </span>

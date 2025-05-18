@@ -59,19 +59,15 @@ const userSchema = new Schema<IUser>(
     orders: {
       type: [mongoose.Schema.Types.ObjectId],
       ref: "Order",
-      default: [],
     },
     address: {
       type: String,
-      default: "",
     },
     phone: {
       type: String,
-      default: "",
     },
     profilePicture: {
       type: String,
-      default: "",
     },
     isVerified: {
       type: Boolean,
@@ -79,19 +75,15 @@ const userSchema = new Schema<IUser>(
     },
     verificationToken: {
       type: String,
-      default: "",
     },
     verificationTokenExpiry: {
       type: Date,
-      default: null,
     },
     passwordResetToken: {
       type: String,
-      default: "",
     },
     passwordResetTokenExpiry: {
       type: Date,
-      default: null,
     },
   },
   { timestamps: true }

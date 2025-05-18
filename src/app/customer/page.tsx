@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
+import Link from "next/link";
 
 export default function CustomerDashboard() {
   const { data: session, status } = useSession();
@@ -17,7 +18,8 @@ export default function CustomerDashboard() {
     } else if (status === "authenticated") {
       if (session.user.role !== "customer") {
         // Redirect to appropriate dashboard based on role
-        const redirectPath = session.user.role === "admin" ? "/admin" : "/delivery";
+        const redirectPath =
+          session.user.role === "admin" ? "/admin" : "/delivery";
         router.push(redirectPath);
       }
       setLoading(false);
@@ -39,14 +41,16 @@ export default function CustomerDashboard() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-900">Customer Dashboard</h1>
+          <h1 className="text-xl font-bold text-gray-900">
+            Customer Dashboard
+          </h1>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-700">
               <span>Welcome, </span>
               <span className="font-medium">{session?.user?.name}</span>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => signOut({ callbackUrl: "/login" })}
             >
@@ -58,16 +62,23 @@ export default function CustomerDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Order Something Delicious</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Order Something For Yourself!
+          </h2>
           <p className="text-gray-600 mb-4">
-            Browse our menu and place your order. Your food will be delivered fresh and hot!
+            Browse our product and place your order. Your product will be
+            delivered soon!
           </p>
-          <Button>Browse Menu</Button>
+          <Link href="/">
+            <Button>Browse Products</Button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Your Orders</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Your Orders
+            </h2>
             <div className="text-gray-600">
               <p className="mb-4">You haven&apos;t placed any orders yet.</p>
               <Button variant="outline">View History</Button>
@@ -75,13 +86,16 @@ export default function CustomerDashboard() {
           </div>
 
           <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Your Profile</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Your Profile
+            </h2>
             <div className="text-gray-600">
               <p className="mb-2">
                 <span className="font-medium">Name:</span> {session?.user?.name}
               </p>
               <p className="mb-2">
-                <span className="font-medium">Email:</span> {session?.user?.email}
+                <span className="font-medium">Email:</span>{" "}
+                {session?.user?.email}
               </p>
               <p className="mb-4">
                 <span className="font-medium">Account Type:</span> Customer
