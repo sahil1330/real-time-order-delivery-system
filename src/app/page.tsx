@@ -11,6 +11,7 @@ import Link from "next/link";
 import { IProduct } from "@/models/product.model";
 import HomePageSkeleton from "@/components/skeltons/HomePageSkeleton";
 import { useRouter } from "next/navigation";
+import { useSocket } from "@/context/SocketProvider";
 export default function Home() {
   const [isUserSession, setIsUserSession] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -18,24 +19,29 @@ export default function Home() {
   const [productsInCart, setProductsInCart] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState<IProduct[]>([]);
+  // const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
+  // const [transport, setTransport] = useState("N/A");
+  const { sendMessage, socket } = useSocket();
   const { data: session } = useSession();
   const router = useRouter();
   console.log("User: ", session?.user);
-  useEffect(() => {
-    if (session) {
-      setIsUserSession(true);
-      setUser(session.user);
-    }
-  }, [session]);
 
   useEffect(() => {
     (async () => {
       fetchProducts();
       if (session?.user._id) {
+        setIsUserSession(true);
+        setUser(session.user);
         await fetchCart();
+        await sendMessage("Hello from client");
+        // console.log("Status: ", isSocketConnected);
+        // console.log("Transport: ", transport);
+        console.log("Socket: ", socket);
       }
     })();
   }, [session?.user._id]);
+
+  useEffect(() => {}, []);
   const fetchCart = async () => {
     try {
       const response = await fetch("/api/products/fetchCart");
@@ -175,11 +181,22 @@ export default function Home() {
 
   return (
     <div>
+      {" "}
       {isUserSession ? (
         <header className="bg-white shadow">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <h1 className="text-xl font-bold text-gray-900">Real Time Order</h1>
             <div className="flex items-center space-x-4">
+              <Link href="/customer/cart">
+                <Button variant="ghost" size="sm" className="relative">
+                  <ShoppingCart className="h-5 w-5" />
+                  {cart.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {cart.reduce((total, item) => total + item.quantity, 0)}
+                    </span>
+                  )}
+                </Button>
+              </Link>
               <div className="text-sm text-gray-700">
                 <span>Welcome, </span>
                 <span className="font-medium">{user?.name}</span>
@@ -212,7 +229,6 @@ export default function Home() {
           </div>
         </header>
       )}
-
       {isLoading ? (
         <HomePageSkeleton />
       ) : (

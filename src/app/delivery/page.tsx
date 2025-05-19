@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 export default function DeliveryDashboard() {
   const { data: session, status } = useSession();
@@ -81,6 +82,12 @@ export default function DeliveryDashboard() {
             </h2>
             <div className="text-gray-600">
               <p>No upcoming orders to deliver.</p>
+              <Link
+                href="/delivery/orders/unassigned"
+                className="mt-4 inline-block"
+              >
+                <Button>View unassigned Orders</Button>
+              </Link>
             </div>
           </div>
 
