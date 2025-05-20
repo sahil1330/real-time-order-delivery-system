@@ -25,7 +25,9 @@ export async function middleware(request: NextRequest) {
     url.pathname !== "/verify" &&
     url.pathname !== "/reset-password" &&
     url.pathname !== "/delivery/login" &&
-    url.pathname !== "/delivery/register"
+    url.pathname !== "/delivery/register" &&
+    url.pathname !== "/reset-password" &&
+    url.pathname !== "/reset-password/request"
   ) {
     const newUrl = new URL("/login", url.origin);
     return Response.redirect(newUrl);

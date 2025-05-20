@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
     if (!email) {
       return NextResponse.json(
-        { error: "Email is required" },
+        { message: "Email is required" },
         { status: 400 }
       );
     }
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Send reset email
     await resend.emails.send({
-      from: "Order Delivery System <no-reply@yourdomain.com>",
+      from: "Acme <onboarding@resend.dev>",
       to: email,
       subject: "Reset Your Password",
       html: `
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Password reset request error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }

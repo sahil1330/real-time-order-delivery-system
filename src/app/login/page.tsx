@@ -14,7 +14,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
 const loginSchema = z.object({
-  identifier: z.string().email("Please enter a valid email address or username"),
+  identifier: z
+    .string()
+    .email("Please enter a valid email address or username"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
   remember: z.boolean().optional(),
 });
@@ -74,7 +76,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast("Error", {  
+      toast("Error", {
         description: "An unexpected error occurred",
       });
     } finally {
@@ -96,7 +98,6 @@ export default function LoginPage() {
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
       <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
-
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -142,7 +143,8 @@ export default function LoginPage() {
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Signing in..." : "Sign In"}
         </Button>
-      </form>      <div className="mt-6 text-center">
+      </form>{" "}
+      <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
           Don&apos;t have an account?{" "}
           <Link href="/register" className="text-blue-600 hover:underline">
@@ -151,12 +153,14 @@ export default function LoginPage() {
         </p>
         <p className="text-sm text-gray-600 mt-2">
           Delivery partner?{" "}
-          <Link href="/delivery/login" className="text-blue-600 hover:underline">
+          <Link
+            href="/delivery/login"
+            className="text-blue-600 hover:underline"
+          >
             Sign in here
           </Link>
         </p>
       </div>
-
       <div className="mt-8">
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
