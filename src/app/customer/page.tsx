@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "@/components/ui/sonner";
 import { Order } from "./orders/page";
+import { SheetModel } from "@/components/SheetModel";
 
 export default function CustomerDashboard() {
   const { data: session, status } = useSession();
@@ -105,6 +106,7 @@ export default function CustomerDashboard() {
               <p className="mb-4">
                 <span className="font-medium">Account Type:</span> Customer
               </p>
+              <SheetModel user={session?.user} />
               <Button variant="outline">Edit Profile</Button>
             </div>
           </div>

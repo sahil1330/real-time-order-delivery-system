@@ -101,10 +101,13 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email;
         session.user.cart = token.cart;
         session.user.name = token.name;
+        session.user.phone = token.phone;
+        session.user.address = token.address;
+        session.user.profilePicture = token.profilePicture;
       }
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         // Access the raw document data if it's a Mongoose document
         const userData = (user as any)._doc || user;
@@ -120,6 +123,9 @@ export const authOptions: NextAuthOptions = {
         token.isVerified = userData.isVerified || token.isVerified;
         token.email = userData.email || token.email;
         token.name = userData.name || token.name;
+        token.phone = userData.phone || token.phone;
+        token.address = userData.address || token.address;
+        token.profilePicture = userData.profilePicture || token.profilePicture;
         // Add redirect path based on user role
         if (userData.role === "admin") {
           token.redirectPath = "/admin";
@@ -139,6 +145,19 @@ export const authOptions: NextAuthOptions = {
             console.error("Failed to serialize cart data:", error);
             token.cart = []; // Fallback to empty cart
           }
+        }
+
+        if (trigger === "update") {
+          // Update the token with the new session data
+          token.name = session?.user?.name || userData.name || token.name;
+          token.email = session?.user?.email || userData.email || token.email;
+          token.phone = session?.user?.phone || userData.phone || token.phone;
+          token.address =
+            session?.user?.address || userData.address || token.address;
+          token.profilePicture =
+            session?.user?.profilePicture ||
+            userData.profilePicture ||
+            token.profilePicture;
         }
       }
       return token;
