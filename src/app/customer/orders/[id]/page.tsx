@@ -106,11 +106,12 @@ export default function OrderDetailPage({
 
     const fetchOrderDetails = async () => {
       try {
-        const response = await fetch(`/api/orders/${id}`);
+        const response = await fetch(`/api/orders/get-order?id=${id}`);
         if (!response.ok) throw new Error("Failed to fetch order details");
 
         const data = await response.json();
         setOrder(data.order);
+        console.log("Order Details:", data);
         setStatusUpdates(data.order.statusHistory || []);
         setLoading(false);
       } catch (error) {
@@ -147,7 +148,7 @@ export default function OrderDetailPage({
         socket.off(`order-status-update`);
       };
     }
-  }, [joinRoom, socket]);
+  }, [id, joinRoom, socket]);
 
   const handleSubmitRating = async () => {
     if (!order) return;

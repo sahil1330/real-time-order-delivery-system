@@ -1,5 +1,6 @@
 // Thisimport { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 import dbConnect from "@/lib/connectDb";
 import { NextResponse } from "next/server";
 import UserModel from "@/models/user.model";
@@ -7,7 +8,7 @@ import UserModel from "@/models/user.model";
 export async function DELETE() {
   try {
     await dbConnect();
-    const session = await auth();
+    const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

@@ -3,7 +3,6 @@ import dbConnect from "@/lib/connectDb";
 import UserModel from "@/models/user.model";
 import { generateToken } from "@/lib/helpers/jwt";
 import { sendVerificationEmail } from "@/lib/helpers/sendVerificationEmail";
-import { signIn } from "@/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,17 +64,6 @@ export async function POST(request: NextRequest) {
     user.verificationToken = "";
     user.verificationTokenExpiry = new Date(0); // Set to epoch time
     await user.save();
-    // Sign in the user after verification
-    try {
-      await signIn("credentials", { 
-        email: user.email,
-        isVerified: true,
-        redirect: false
-      });
-    } catch (signInError) {
-      console.error("Error signing in user after verification:", signInError);
-      // Continue with verification response even if sign-in fails
-    }
     // Send success response
     return NextResponse.json(
       {

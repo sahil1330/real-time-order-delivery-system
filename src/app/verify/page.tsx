@@ -1,39 +1,78 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-
+import { signIn } from "next-auth/react";
 
 export default function VerifyPage() {
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const router = useRouter();
+
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-20">
+          Loading...
+        </div>
+      }
+    >
+      <VerifyPageContent
+        code={code}
+        setCode={setCode}
+        isLoading={isLoading}
+        setIsLoading={setIsLoading}
+        isResending={isResending}
+        setIsResending={setIsResending}
+        router={router}
+      />
+    </Suspense>
+  );
+}
+
+function VerifyPageContent({
+  code,
+  setCode,
+  isLoading,
+  setIsLoading,
+  isResending,
+  setIsResending,
+  router,
+}: {
+  code: string;
+  setCode: (code: string) => void;
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
+  isResending: boolean;
+  setIsResending: (isResending: boolean) => void;
+  router: ReturnType<typeof useRouter>;
+}) {
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email) {
       toast("Email is missing. Please go back to registration.");
       return;
     }
-    
+
     if (!code) {
-      toast("Error",{
+      toast("Error", {
         description: "Please enter the verification code.",
       });
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       const response = await fetch("/api/verify", {
         method: "POST",
@@ -42,17 +81,17 @@ export default function VerifyPage() {
         },
         body: JSON.stringify({ email, verificationCode: code }),
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || "Verification failed");
       }
-      
-      toast("Success",{
+
+      toast("Success", {
         description: data.message || "Email verified successfully",
       });
-      
+
       // Auto signin user
       const role = data.user?.role || "customer";
 
@@ -66,19 +105,18 @@ export default function VerifyPage() {
           router.push("/customer");
         }
       }, 1500);
-      
     } catch (error: any) {
-      toast("Error",{
+      toast("Error", {
         description: error.message || "An error occurred during verification",
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const handleResendCode = async () => {
     if (!email) {
-      toast("Error",{
+      toast("Error", {
         description: "Email is missing. Please go back to registration.",
       });
       return;
@@ -94,9 +132,9 @@ export default function VerifyPage() {
         },
         body: JSON.stringify({ email }),
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || "Failed to resend verification code");
       }
@@ -105,19 +143,39 @@ export default function VerifyPage() {
         description: data.message || "Verification code resent to your email",
       });
 
+      const result = await signIn("credentials", {
+        identifier: data.user.email,
+        password: data.user.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        toast("Error", {
+          description: result.error,
+        });
+      } else {
+        toast("Success", {
+          description: "Logged in successfully",
+        });
+        // Redirect based on user role
+        router.replace("/")
+      }
     } catch (error: any) {
       toast("Error", {
-        description: error.message || "An error occurred while resending the code",
+        description:
+          error.message || "An error occurred while resending the code",
       });
     } finally {
       setIsResending(false);
     }
   };
-  
+
   if (!email) {
     return (
       <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-20">
-        <h1 className="text-2xl font-bold mb-6 text-center">Verification Failed</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">
+          Verification Failed
+        </h1>
         <p className="text-gray-700 mb-4 text-center">
           Email address is missing. Please go back to registration.
         </p>
@@ -129,15 +187,16 @@ export default function VerifyPage() {
       </div>
     );
   }
-  
+
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-20">
       <h1 className="text-2xl font-bold mb-6 text-center">Verify Your Email</h1>
       <p className="text-gray-700 mb-6 text-center">
-        We&apos;ve sent a verification code to <span className="font-medium">{email}</span>. 
-        Please enter the code below to verify your email address.
+        We&apos;ve sent a verification code to{" "}
+        <span className="font-medium">{email}</span>. Please enter the code
+        below to verify your email address.
       </p>
-      
+
       <form onSubmit={handleVerify} className="space-y-6">
         <div className="space-y-2">
           <Input
@@ -150,12 +209,12 @@ export default function VerifyPage() {
             maxLength={6}
           />
         </div>
-        
+
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Verifying..." : "Verify Email"}
         </Button>
       </form>
-      
+
       <div className="mt-4 text-center">
         <p className="text-sm text-gray-600 mb-2">
           Didn&apos;t receive a code?
@@ -169,7 +228,7 @@ export default function VerifyPage() {
           {isResending ? "Sending..." : "Resend Code"}
         </Button>
       </div>
-      
+
       <div className="mt-6 text-center">
         <Link href="/login" className="text-sm text-blue-600 hover:underline">
           Back to Login

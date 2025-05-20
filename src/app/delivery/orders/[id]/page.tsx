@@ -62,7 +62,7 @@ export default function DeliveryOrderDetailPage({
 
     const fetchOrderDetails = async () => {
       try {
-        const response = await fetch(`/api/orders/${id}`);
+        const response = await fetch(`/api/orders/get-order?id=${id}`);
         if (!response.ok) throw new Error("Failed to fetch order details");
 
         const data = await response.json();
@@ -102,7 +102,7 @@ export default function DeliveryOrderDetailPage({
         socket.off(`order-status-update`);
       };
     }
-  }, [socket, joinRoom]);
+  }, [socket, joinRoom, id]);
 
   const updateOrderStatus = async (newStatus: string) => {
     if (!order) return;

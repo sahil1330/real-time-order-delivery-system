@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 import dbConnect from "@/lib/connectDb";
 import OrderModel from "@/models/order.model";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "delivery") {
     return new Response("Unauthorized", { status: 401 });
   }

@@ -7,20 +7,20 @@ import { Button } from "../ui/button";
 import { ShoppingCart } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { User } from "next-auth";
-
+import { usePathname } from "next/navigation";
 function Navbar(props: {
   user: User | undefined;
   cart?: any[];
   title: string | undefined;
 }) {
   const { user, cart } = props;
-  const url = new URL(window.location.href);
-  const isLoginPage = url.pathname.includes("/login");
-  const isRegisterPage = url.pathname.includes("/register");
-  const isDeliveryLoginPage = url.pathname.includes("/delivery/login");
-  const isDeliveryRegisterPage = url.pathname.includes("/delivery/register");
-  const isVerifyPage = url.pathname.includes("/verify");
-  const isResetPasswordPage = url.pathname.includes("/reset-password");
+  const pathname = usePathname();
+  const isLoginPage = pathname.includes("/login");
+  const isRegisterPage = pathname.includes("/register");
+  const isDeliveryLoginPage = pathname.includes("/delivery/login");
+  const isDeliveryRegisterPage = pathname.includes("/delivery/register");
+  const isVerifyPage = pathname.includes("/verify");
+  const isResetPasswordPage = pathname.includes("/reset-password");
 
   if (
     isLoginPage ||

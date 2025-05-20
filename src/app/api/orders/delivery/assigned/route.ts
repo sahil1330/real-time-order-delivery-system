@@ -1,10 +1,11 @@
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
 import dbConnect from "@/lib/connectDb";
 import OrderModel from "@/models/order.model";
 import { NextResponse } from "next/server";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 
 export async function GET() {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "delivery") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

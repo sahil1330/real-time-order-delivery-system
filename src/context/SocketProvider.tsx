@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { createContext, useCallback, useEffect, useState } from "react";
-import io, { Socket } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 interface SocketProviderProps {
   children?: React.ReactNode;
 }
@@ -10,7 +10,7 @@ interface ISocketContext {
   sendMessage: (message: string) => any;
   joinRoom: (room: string) => any;
   leaveRoom: (room: string) => any;
-  socket?: typeof Socket;
+  socket?: Socket;
   sendMessageOrderAccepted: (order: string) => any;
   sendMessageOrderUpdate: (order: string) => any;
 }
@@ -26,7 +26,7 @@ export const useSocket = () => {
 const SocketContext = createContext<ISocketContext | null>(null);
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
-  const [socket, setSocket] = useState<typeof Socket>();
+  const [socket, setSocket] = useState<Socket | undefined>(undefined);
 
   const sendMessage: ISocketContext["sendMessage"] = useCallback(
     (msg) => {

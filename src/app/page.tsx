@@ -27,6 +27,7 @@ export default function Home() {
         await fetchCart();
       }
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user._id]);
 
   useEffect(() => {}, []);

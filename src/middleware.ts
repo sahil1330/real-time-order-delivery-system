@@ -1,4 +1,6 @@
-import { auth } from "@/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+export { default } from "next-auth/middleware";
 
 export const config = {
   matcher: [
@@ -13,63 +15,66 @@ export const config = {
   ],
 };
 
-export default auth((req) => {
+export async function middleware(request: NextRequest) {
+  const token = await getToken({ req: request });
+  const url = request.nextUrl;
   if (
-    !req.auth &&
-    req.nextUrl.pathname !== "/login" &&
-    req.nextUrl.pathname !== "/register" &&
-    req.nextUrl.pathname !== "/verify" &&
-    req.nextUrl.pathname !== "/reset-password" &&
-    req.nextUrl.pathname !== "/delivery/login" &&
-    req.nextUrl.pathname !== "/delivery/register"
+    !token &&
+    url.pathname !== "/login" &&
+    url.pathname !== "/register" &&
+    url.pathname !== "/verify" &&
+    url.pathname !== "/reset-password" &&
+    url.pathname !== "/delivery/login" &&
+    url.pathname !== "/delivery/register"
   ) {
-    const newUrl = new URL("/login", req.nextUrl.origin);
+    const newUrl = new URL("/login", url.origin);
     return Response.redirect(newUrl);
   }
   if (
-    req.auth &&
-    req.auth.user.role === "delivery" &&
-    (req.nextUrl.pathname === "/login" ||
-      req.nextUrl.pathname === "/delivery/login" ||
-      req.nextUrl.pathname === "/customer" ||
-      req.nextUrl.pathname === "/admin" ||
-      req.nextUrl.pathname === "/register" ||
-      req.nextUrl.pathname === "/verify" ||
-      req.nextUrl.pathname === "/")
+    token &&
+    token.role === "delivery" &&
+    (url.pathname === "/login" ||
+      url.pathname === "/delivery/login" ||
+      url.pathname === "/customer" ||
+      url.pathname === "/admin" ||
+      url.pathname === "/register" ||
+      url.pathname === "/verify" ||
+      url.pathname === "/")
   ) {
-    const newUrl = new URL("/delivery", req.nextUrl.origin);
-    return Response.redirect(newUrl);
-  }
-
-  if (
-    req.auth &&
-    req.auth.user.role === "customer" &&
-    (req.nextUrl.pathname === "/login" ||
-      req.nextUrl.pathname === "/admin" ||
-      req.nextUrl.pathname === "/delivery" ||
-      req.nextUrl.pathname === "/delivery/login" ||
-      req.nextUrl.pathname === "/delivery/register" ||
-      req.nextUrl.pathname === "/verify" ||
-      req.nextUrl.pathname === "/register")
-  ) {
-    const newUrl = new URL("/customer", req.nextUrl.origin);
+    const newUrl = new URL("/delivery", url.origin);
     return Response.redirect(newUrl);
   }
 
   if (
-    req.auth &&
-    req.auth.user.role === "admin" &&
-    (req.nextUrl.pathname === "/login" ||
-      req.nextUrl.pathname === "/register" ||
-      req.nextUrl.pathname === "/customer" ||
-      req.nextUrl.pathname === "/delivery" ||
-      req.nextUrl.pathname === "/delivery/login" ||
-      req.nextUrl.pathname === "/delivery/register" ||
-      req.nextUrl.pathname === "/" ||
-      req.nextUrl.pathname === "/verify"
-    )
+    token &&
+    token.role === "customer" &&
+    (url.pathname === "/login" ||
+      url.pathname === "/admin" ||
+      url.pathname === "/delivery" ||
+      url.pathname === "/delivery/login" ||
+      url.pathname === "/delivery/register" ||
+      url.pathname === "/verify" ||
+      url.pathname === "/register")
   ) {
-    const newUrl = new URL("/admin", req.nextUrl.origin);
+    const newUrl = new URL("/customer", url.origin);
     return Response.redirect(newUrl);
   }
-});
+
+  if (
+    token &&
+    token.role === "admin" &&
+    (url.pathname === "/login" ||
+      url.pathname === "/register" ||
+      url.pathname === "/customer" ||
+      url.pathname === "/delivery" ||
+      url.pathname === "/delivery/login" ||
+      url.pathname === "/delivery/register" ||
+      url.pathname === "/" ||
+      url.pathname === "/verify")
+  ) {
+    const newUrl = new URL("/admin", url.origin);
+    return NextResponse.redirect(newUrl);
+  }
+
+  return NextResponse.next();
+}

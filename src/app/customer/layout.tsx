@@ -9,7 +9,7 @@ function Layout({ children }: { children: React.ReactNode }): React.ReactNode {
   const [user, setUser] = useState<User | undefined>(session?.user);
   useEffect(() => {
     setUser(session?.user);
-  }, [session?.user._id]);
+  }, [session?.user]);
   return (
     <div>
       <Navbar user={user} title={"Delivery Dashboard"} />
