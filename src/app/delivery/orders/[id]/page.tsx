@@ -28,7 +28,7 @@ export default function DeliveryOrderDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { socket, joinRoom } = useSocket();
+  const { socket, joinRoom, sendMessageOrderUpdate } = useSocket();
   const router = useRouter();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -80,32 +80,29 @@ export default function DeliveryOrderDetailPage({
     fetchOrderDetails();
   }, [id]);
 
-  useEffect(() => {
-    if (socket && socket.connected && id) {
-      // Join order-specific room
-      (async () => await joinRoom(`order-${id}`))();
+  // useEffect(() => {
+  //   if (socket && socket.connected && id) {
+  //     // Join order-specific room
+  //     (async () => await joinRoom(`order-${id}`))();
 
-      // Listen for order status updates
-      socket.on(
-        `order-status-update`,
-        (updatedOrder: { statusHistory: any; orderStatus: any }) => {
-          setOrder((prevOrder: any) => ({
-            ...prevOrder,
-            orderStatus: updatedOrder.orderStatus,
-            statusHistory: updatedOrder.statusHistory,
-          }));
+  //     // Listen for order status updates
+  //     socket.on(`order-status-update`, (updatedOrder: any) => {
+  //       setOrder((prevOrder: any) => ({
+  //         ...prevOrder,
+  //         orderStatus: updatedOrder.order.orderStatus,
+  //         statusHistory: updatedOrder.order.statusHistory,
+  //       }));
+  //       console.log("Order status updated", updatedOrder.order);
+  //       toast("Order Update", {
+  //         description: `Order status updated to ${updatedOrder.order.orderStatus}`,
+  //       });
+  //     });
 
-          toast("Order Update", {
-            description: `Order status updated to ${updatedOrder.orderStatus}`,
-          });
-        }
-      );
-
-      return () => {
-        socket.off(`order-status-update`);
-      };
-    }
-  }, [socket, id]);
+  //     return () => {
+  //       socket.off(`order-status-update`);
+  //     };
+  //   }
+  // }, [socket, joinRoom]);
 
   const updateOrderStatus = async (newStatus: string) => {
     if (!order) return;
@@ -136,11 +133,16 @@ export default function DeliveryOrderDetailPage({
       if (socket && socket.connected) {
         await joinRoom(`order-${data.order._id}`);
         console.log("Emitting order status update ", data.order);
-        socket.emit("update-order", data.order);
+        // socket.emit("update-order", data.order);
+        await sendMessageOrderUpdate(data.order);
       }
 
       // Update the order in our local state
-      setOrder({ ...order, orderStatus: newStatus });
+      setOrder({
+        ...order,
+        orderStatus: newStatus,
+        statusHistory: data.order.statusHistory,
+      });
 
       toast("Success", {
         description: `Order status updated to ${newStatus}`,

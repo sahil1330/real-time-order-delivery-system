@@ -156,7 +156,7 @@ export default function CustomerOrdersPage() {
                     {order.products.length}{" "}
                     {order.products.length === 1 ? "item" : "items"}
                   </p>
-                  <p className="font-medium">${order.totalAmount.toFixed(2)}</p>
+                  <p className="font-medium">₹{order.totalAmount.toFixed(2)}</p>
                 </div>
 
                 {order.estimatedDeliveryTime &&

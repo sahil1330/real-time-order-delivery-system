@@ -33,7 +33,7 @@ interface UnassignedOrder {
 }
 
 export default function UnassignedOrdersPage() {
-  const { socket, joinRoom } = useSocket();
+  const { socket, joinRoom, sendMessageOrderAccepted } = useSocket();
   const router = useRouter();
   const [orders, setOrders] = useState<UnassignedOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,7 +112,7 @@ export default function UnassignedOrdersPage() {
         });
         // Emit socket event to notify other delivery partners
         if (socket && socket.connected) {
-          socket.emit("order-accepted", data.populatedOrder);
+          await sendMessageOrderAccepted(data.populatedOrder);
         }
         // Remove the accepted order from the list
         setOrders((prev) => prev.filter((order) => order._id !== orderId));

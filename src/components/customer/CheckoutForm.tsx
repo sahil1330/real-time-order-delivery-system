@@ -76,8 +76,8 @@ export default function CheckoutForm() {
       cart.reduce(
         (total, item) => total + item.product.price * item.quantity,
         0
-      ) + 5
-    ); // Adding $5 delivery fee
+      ) + 25
+    ); // Adding ₹25 delivery fee
   };
 
   const form = useForm<CheckoutFormValues>({
@@ -292,7 +292,7 @@ export default function CheckoutForm() {
         <div className="border-t pt-4">
           <div className="flex justify-between text-lg font-medium">
             <span>Total Amount</span>
-            <span>${calculateTotal().toFixed(2)}</span>
+            <span>₹{calculateTotal().toFixed(2)}</span>
           </div>
           <p className="text-sm text-gray-500 mt-1">
             Including taxes and delivery charges

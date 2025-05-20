@@ -11,6 +11,8 @@ interface ISocketContext {
   joinRoom: (room: string) => any;
   leaveRoom: (room: string) => any;
   socket?: typeof Socket;
+  sendMessageOrderAccepted: (order: string) => any;
+  sendMessageOrderUpdate: (order: string) => any;
 }
 
 export const useSocket = () => {
@@ -58,6 +60,33 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     [socket]
   );
 
+  const sendMessageOrderAccepted: ISocketContext["sendMessageOrderAccepted"] =
+    useCallback(
+      (order) => {
+        console.log("Sending order accepted message", order);
+        if (socket) {
+          socket.emit("order-accepted", { order });
+        }
+      },
+      [socket]
+    );
+
+  const sendMessageOrderUpdate: ISocketContext["sendMessageOrderUpdate"] =
+    useCallback(
+      (order) => {
+        console.log(
+          "Sending order update message",
+          order,
+          "\nSocket for update: ",
+          socket
+        );
+        if (socket) {
+          socket.emit("update-order", { order });
+        }
+      },
+      [socket]
+    );
+
   useEffect(() => {
     const _socket = io();
     setSocket(_socket);
@@ -72,7 +101,18 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     };
   }, []);
   return (
-    <SocketContext.Provider value={{ sendMessage, joinRoom, leaveRoom, socket }}>
+    <SocketContext.Provider
+      value={
+        {
+          sendMessage,
+          joinRoom,
+          leaveRoom,
+          socket,
+          sendMessageOrderAccepted,
+          sendMessageOrderUpdate,
+        } as ISocketContext
+      }
+    >
       {children}
     </SocketContext.Provider>
   );

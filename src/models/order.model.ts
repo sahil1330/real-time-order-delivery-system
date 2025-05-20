@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import ProductModel from "./product.model";
 
 export interface IOrder extends Document {
   _id: string;
@@ -55,7 +56,7 @@ const orderSchema = new Schema<IOrder>(
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
+          ref: ProductModel,
           required: true,
         },
         quantity: {

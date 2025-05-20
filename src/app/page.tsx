@@ -245,7 +245,7 @@ export default function Home() {
                 />
                 <h2 className="text-lg font-semibold">{product.name}</h2>
                 <p className="text-gray-600">{product.description}</p>
-                <p className="text-gray-900 font-bold">${product.price}</p>
+                <p className="text-gray-900 font-bold">₹{product.price}</p>
                 {productsInCart.includes(product._id) ? (
                   <div className="isolate flex -space-x-px">
                     <Button

@@ -70,41 +70,38 @@ export default function LiveOrderTracking() {
       // Join admin room to receive updates
       (async () => await joinRoom("admin"))();
       // Listen for order status updates
-      socket.on(
-        "order-status-update",
-        (data: {
-          orderStatus: any;
-          statusHistory: any;
-          _id: string;
-          status: string;
-        }) => {
-          setLiveOrders((prev) => {
-            // Update existing order if it's in our list
-            const orderExists = prev.some((order) => order._id === data._id);
+      socket.on("order-status-update", (data: any) => {
+        setLiveOrders((prev) => {
+          // Update existing order if it's in our list
+          const orderExists = prev.some(
+            (order) => order._id === data.order._id
+          );
 
-            if (orderExists) {
-              // If the order is now delivered or cancelled, remove it from live view
-              if (data.status === "delivered" || data.status === "cancelled") {
-                return prev.filter((order) => order._id !== data._id);
-              }
-
-              // Otherwise update its status
-              return prev.map((order) =>
-                order._id === data._id
-                  ? {
-                      ...order,
-                      orderStatus: data.orderStatus,
-                      lastUpdated: data.statusHistory.timestamp,
-                    }
-                  : order
-              );
+          if (orderExists) {
+            // If the order is now delivered or cancelled, remove it from live view
+            if (
+              data.order.orderStatus === "delivered" ||
+              data.order.orderStatus === "cancelled"
+            ) {
+              return prev.filter((order) => order._id !== data.order._id);
             }
 
-            return prev;
-          });
-          console.log(" Order status updated:", data);
-        }
-      );
+            // Otherwise update its status
+            return prev.map((order) =>
+              order._id === data.order._id
+                ? {
+                    ...order,
+                    orderStatus: data.order.orderStatus,
+                    lastUpdated: data.order.statusHistory.timestamp,
+                  }
+                : order
+            );
+          }
+
+          return prev;
+        });
+        console.log(" Order status updated:", data);
+      });
 
       // Listen for new orders
       socket.on(

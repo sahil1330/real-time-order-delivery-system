@@ -128,7 +128,7 @@ export default function DeliveryDashboard() {
               <p className="text-sm text-gray-600">Deliveries Today</p>
             </div>
             <div className="border rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-green-600">$0</p>
+              <p className="text-2xl font-bold text-green-600">₹0</p>
               <p className="text-sm text-gray-600">Today&apos;s Earnings</p>
             </div>
             <div className="border rounded-lg p-4 text-center">

@@ -127,32 +127,29 @@ export default function OrderDetailPage({
 
   useEffect(() => {
     console.log("Socket", socket);
-    if (socket && socket.connected && id) {
+    if (socket && socket.connected) {
       // Join order-specific room
       (async () => await joinRoom(`order-${id}`))();
       // Listen for order status updates
-
-      socket.on(
-        `order-status-update`,
-        (updatedOrder: { statusHistory: any; orderStatus: any }) => {
-          console.log("Order status updated:", updatedOrder);
-          setStatusUpdates(updatedOrder.statusHistory || []);
-          setOrder((prevOrder: any) => ({
-            ...prevOrder,
-            orderStatus: updatedOrder.orderStatus,
-            statusHistory: updatedOrder.statusHistory,
-          }));
-          toast("Order Update", {
-            description: `Order status updated to ${updatedOrder.orderStatus}`,
-          });
-        }
-      );
+      
+      socket.on(`order-status-update`, (updatedOrder: any) => {
+        console.log("Order status updated:", updatedOrder.order);
+        setStatusUpdates(updatedOrder.order.statusHistory || []);
+        setOrder((prevOrder: any) => ({
+          ...prevOrder,
+          orderStatus: updatedOrder.order.orderStatus,
+          statusHistory: updatedOrder.order.statusHistory,
+        }));
+        toast("Order Update", {
+          description: `Order status updated to ${updatedOrder.order.orderStatus}`,
+        });
+      });
 
       return () => {
         socket.off(`order-status-update`);
       };
     }
-  }, [id, joinRoom, socket]);
+  }, [joinRoom, socket]);
 
   const handleSubmitRating = async () => {
     if (!order) return;

@@ -67,26 +67,34 @@ export default function OrdersTable() {
       socket.on(
         "order-status-update",
         (data: {
-          statusHistory: any;
-          orderStatus: any;
-          _id: string;
-          status: any;
+          order: {
+            _id: string;
+            orderStatus: string;
+            statusHistory: [
+              {
+                timestamp: string;
+              },
+            ];
+          };
         }) => {
           setOrders((prev) =>
             prev.map((order) =>
-              order._id === data._id
+              order._id === data.order._id
                 ? {
                     ...order,
-                    orderStatus: data.orderStatus,
-                    statusHistory: data.statusHistory,
-                    updatedAt: data.statusHistory.timestamp,
+                    orderStatus: data.order.orderStatus,
+                    statusHistory: data.order.statusHistory,
+                    updatedAt:
+                      data.order.statusHistory[
+                        data.order.statusHistory.length - 1
+                      ].timestamp,
                   }
                 : order
             )
           );
 
           toast("Order Update", {
-            description: `Order ${data._id.substring(0, 8)} updated to ${data.status}`,
+            description: `Order ${data.order._id.substring(0, 8)} updated to ${data.order.orderStatus}`,
           });
         }
       );

@@ -36,25 +36,28 @@ class SocketService {
 
       socket.on("order-accepted", async (order: any) => {
         // Notify customer room
-        io.to(`order-${order._id}`).emit("order-status-update", order);
+        console.log("Order accepted event emitted to customer room:", order);
+        io.to(`order-${order.order._id}`)
+          .to("admin")
+          .emit("order-status-update", order);
         // Notify admin room
         io.to("admin").emit("order-accepted", {
-          orderId: order._id,
-          deliveryPerson: order.deliveryPerson,
+          orderId: order.order._id,
+          deliveryPerson: order.order.deliveryPerson,
         });
       });
 
       socket.on("update-order", async (order: any) => {
-        socket.join(`order-${order._id}`);
-        console.log(
-          `Socket ${socket.id} joined order room: order-${order._id}`
-        );
+        // socket.join(`order-${order.order._id}`);
+        // console.log(
+        //   `Socket ${socket.id} joined order room: order-${order.order._id}`
+        // );
         // Notify customer room
         console.log(
           "Order status update event emitted to customer room:",
-          order
+          order.order
         );
-        io.to(`order-${order._id}`).emit("order-status-update", order);
+        io.to(`order-${order.order._id}`).emit("order-status-update", order);
         // Notify admin room
         io.to("admin").emit("order-status-update", order);
       });

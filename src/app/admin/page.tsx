@@ -9,11 +9,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OrdersTable from "@/components/admin/OrdersTable";
 import DeliveryPartnersTable from "@/components/admin/DeliveryPartnersTable";
 import LiveOrderTracking from "@/components/admin/LiveOrderTracking";
+import { toast } from "@/components/ui/sonner";
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [countData, setCountData] = useState({
+    totalCustomers: 0,
+    totalOrders: 0,
+    revenue: 0,
+  });
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -21,12 +27,34 @@ export default function AdminDashboard() {
     } else if (status === "authenticated") {
       if (session.user.role !== "admin") {
         // Redirect to appropriate dashboard based on role
-        const redirectPath = session.user.role === "delivery" ? "/delivery" : "/customer";
+        const redirectPath =
+          session.user.role === "delivery" ? "/delivery" : "/customer";
         router.push(redirectPath);
       }
       setLoading(false);
     }
   }, [status, session, router]);
+
+  useEffect(() => {
+    const fetchTotalCounts = async () => {
+      try {
+        const response = await fetch("/api/admin/total-counts");
+        if (!response.ok) throw new Error("Failed to fetch total counts");
+
+        const data = await response.json();
+        console.log("Total Counts:", data);
+        setCountData({
+          totalCustomers: data.totalCounts.totalCustomers || 0,
+          totalOrders: data.totalCounts.totalOrders || 0,
+          revenue: data.totalCounts.totalRevenueAmount || 0,
+        });
+      } catch (error) {
+        console.error("Error fetching total counts:", error);
+        toast.error("Failed to fetch total counts");
+      }
+    };
+    fetchTotalCounts();
+  }, []);
 
   if (loading) {
     return (
@@ -49,8 +77,8 @@ export default function AdminDashboard() {
               <span>Welcome, </span>
               <span className="font-medium">{session?.user?.name}</span>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => signOut({ callbackUrl: "/login" })}
             >
@@ -63,16 +91,26 @@ export default function AdminDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white shadow rounded-lg p-6 text-center">
-            <h2 className="text-lg font-medium text-gray-900 mb-2">Total Customers</h2>
-            <p className="text-3xl font-bold text-blue-600">0</p>
+            <h2 className="text-lg font-medium text-gray-900 mb-2">
+              Total Customers
+            </h2>
+            <p className="text-3xl font-bold text-blue-600">
+              {countData.totalCustomers || 0}
+            </p>
           </div>
           <div className="bg-white shadow rounded-lg p-6 text-center">
-            <h2 className="text-lg font-medium text-gray-900 mb-2">Total Orders</h2>
-            <p className="text-3xl font-bold text-green-600">0</p>
+            <h2 className="text-lg font-medium text-gray-900 mb-2">
+              Total Orders
+            </h2>
+            <p className="text-3xl font-bold text-green-600">
+              {countData.totalOrders || 0}
+            </p>
           </div>
           <div className="bg-white shadow rounded-lg p-6 text-center">
             <h2 className="text-lg font-medium text-gray-900 mb-2">Revenue</h2>
-            <p className="text-3xl font-bold text-purple-600">₹0</p>
+            <p className="text-3xl font-bold text-purple-600">
+              ₹{countData.revenue || 0}
+            </p>
           </div>
         </div>
 
@@ -80,18 +118,20 @@ export default function AdminDashboard() {
           <Tabs defaultValue="orders">
             <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="orders">All Orders</TabsTrigger>
-              <TabsTrigger value="delivery-partners">Delivery Partners</TabsTrigger>
+              <TabsTrigger value="delivery-partners">
+                Delivery Partners
+              </TabsTrigger>
               <TabsTrigger value="live-tracking">Live Tracking</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="orders">
               <OrdersTable />
             </TabsContent>
-            
+
             <TabsContent value="delivery-partners">
               <DeliveryPartnersTable />
             </TabsContent>
-            
+
             <TabsContent value="live-tracking">
               <LiveOrderTracking />
             </TabsContent>
@@ -111,8 +151,8 @@ export default function AdminDashboard() {
 //               <span>Welcome, </span>
 //               <span className="font-medium">{session?.user?.name}</span>
 //             </div>
-//             <Button 
-//               variant="outline" 
+//             <Button
+//               variant="outline"
 //               size="sm"
 //               onClick={() => signOut({ callbackUrl: "/login" })}
 //             >
@@ -159,7 +199,7 @@ export default function AdminDashboard() {
 //               </li>
 //             </ul>
 //           </div>
-          
+
 //           <div id="orders" className="px-1">
 //             <h2 className="text-lg font-medium text-gray-900 mb-4">All Orders</h2>
 //             <div className="rounded-md border">
