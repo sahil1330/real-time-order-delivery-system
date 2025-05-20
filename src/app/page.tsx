@@ -11,21 +11,15 @@ import Link from "next/link";
 import { IProduct } from "@/models/product.model";
 import HomePageSkeleton from "@/components/skeltons/HomePageSkeleton";
 import { useRouter } from "next/navigation";
-import { useSocket } from "@/context/SocketProvider";
 export default function Home() {
+  const { data: session } = useSession();
   const [isUserSession, setIsUserSession] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [cart, setCart] = useState<any[]>([]);
   const [productsInCart, setProductsInCart] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState<IProduct[]>([]);
-  // const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
-  // const [transport, setTransport] = useState("N/A");
-  const { sendMessage, socket } = useSocket();
-  const { data: session } = useSession();
   const router = useRouter();
-  console.log("User: ", session?.user);
-
   useEffect(() => {
     (async () => {
       fetchProducts();
@@ -33,10 +27,6 @@ export default function Home() {
         setIsUserSession(true);
         setUser(session.user);
         await fetchCart();
-        await sendMessage("Hello from client");
-        // console.log("Status: ", isSocketConnected);
-        // console.log("Transport: ", transport);
-        console.log("Socket: ", socket);
       }
     })();
   }, [session?.user._id]);
@@ -49,12 +39,10 @@ export default function Home() {
         throw new Error("Failed to fetch cart");
       }
       const data = await response.json();
-      console.log("Cart data: ", data);
       setCart(data);
       setProductsInCart(data.map((item: any) => item.product._id));
-    } catch (error) {
-      console.error("Error fetching cart:", error);
-      toast.error("Failed to fetch cart");
+    } catch (error: { message: string } | any) {
+      toast.error(error.message || "Failed to fetch cart");
     }
   };
 
@@ -66,11 +54,9 @@ export default function Home() {
         throw new Error("Failed to fetch products");
       }
       const data = await response.json();
-      console.log("Products data: ", data);
       setProducts(data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      toast.error("Failed to fetch products");
+    } catch (error: { message: string } | any) {
+      toast.error(error.message || "Failed to fetch products");
     } finally {
       setIsLoading(false);
     }
@@ -115,11 +101,9 @@ export default function Home() {
 
       const updatedCart = await response.json();
       setCart(updatedCart);
-      console.log("Updated cart: ", updatedCart);
       toast.success("Product added to cart");
-    } catch (error) {
-      console.error("Error adding product to cart:", error);
-      toast.error("Failed to add product to cart");
+    } catch (error: { message: string } | any) {
+      toast.error(error.message || "Failed to add product to cart");
     }
   };
 
@@ -154,8 +138,6 @@ export default function Home() {
               : item
           )
         );
-
-        console.log("Products in cart: ", productsInCart);
       }
       const response = await fetch("/api/products/remove-product-from-cart", {
         method: "DELETE",
@@ -171,11 +153,9 @@ export default function Home() {
 
       const updatedCart = await response.json();
       setCart(updatedCart);
-      console.log("Updated cart after removal: ", updatedCart);
       toast.success("Product removed from cart");
-    } catch (error) {
-      console.error("Error removing product from cart:", error);
-      toast.error("Failed to remove product from cart");
+    } catch (error: { message: string } | any) {
+      toast.error(error.message || "Failed to remove product from cart");
     }
   };
 

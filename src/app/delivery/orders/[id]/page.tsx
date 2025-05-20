@@ -80,29 +80,29 @@ export default function DeliveryOrderDetailPage({
     fetchOrderDetails();
   }, [id]);
 
-  // useEffect(() => {
-  //   if (socket && socket.connected && id) {
-  //     // Join order-specific room
-  //     (async () => await joinRoom(`order-${id}`))();
+  useEffect(() => {
+    if (socket && socket.connected && id) {
+      // Join order-specific room
+      (async () => await joinRoom(`order-${id}`))();
 
-  //     // Listen for order status updates
-  //     socket.on(`order-status-update`, (updatedOrder: any) => {
-  //       setOrder((prevOrder: any) => ({
-  //         ...prevOrder,
-  //         orderStatus: updatedOrder.order.orderStatus,
-  //         statusHistory: updatedOrder.order.statusHistory,
-  //       }));
-  //       console.log("Order status updated", updatedOrder.order);
-  //       toast("Order Update", {
-  //         description: `Order status updated to ${updatedOrder.order.orderStatus}`,
-  //       });
-  //     });
+      // Listen for order status updates
+      socket.on(`order-status-update`, (updatedOrder: any) => {
+        setOrder((prevOrder: any) => ({
+          ...prevOrder,
+          orderStatus: updatedOrder.order.orderStatus,
+          statusHistory: updatedOrder.order.statusHistory,
+        }));
+        console.log("Order status updated", updatedOrder.order);
+        toast("Order Update", {
+          description: `Order status updated to ${updatedOrder.order.orderStatus}`,
+        });
+      });
 
-  //     return () => {
-  //       socket.off(`order-status-update`);
-  //     };
-  //   }
-  // }, [socket, joinRoom]);
+      return () => {
+        socket.off(`order-status-update`);
+      };
+    }
+  }, [socket, joinRoom]);
 
   const updateOrderStatus = async (newStatus: string) => {
     if (!order) return;

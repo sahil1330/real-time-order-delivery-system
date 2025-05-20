@@ -64,40 +64,27 @@ export default function OrdersTable() {
       joinRoom("admin");
 
       // Listen for order status updates
-      socket.on(
-        "order-status-update",
-        (data: {
-          order: {
-            _id: string;
-            orderStatus: string;
-            statusHistory: [
-              {
-                timestamp: string;
-              },
-            ];
-          };
-        }) => {
-          setOrders((prev) =>
-            prev.map((order) =>
-              order._id === data.order._id
-                ? {
-                    ...order,
-                    orderStatus: data.order.orderStatus,
-                    statusHistory: data.order.statusHistory,
-                    updatedAt:
-                      data.order.statusHistory[
-                        data.order.statusHistory.length - 1
-                      ].timestamp,
-                  }
-                : order
-            )
-          );
+      socket.on("order-status-update", (data: any) => {
+        setOrders((prev) =>
+          prev.map((order) =>
+            order._id === data.order._id
+              ? {
+                  ...order,
+                  orderStatus: data.order.orderStatus,
+                  statusHistory: data.order.statusHistory,
+                  updatedAt:
+                    data.order.statusHistory[
+                      data.order.statusHistory.length - 1
+                    ].timestamp,
+                }
+              : order
+          )
+        );
 
-          toast("Order Update", {
-            description: `Order ${data.order._id.substring(0, 8)} updated to ${data.order.orderStatus}`,
-          });
-        }
-      );
+        toast("Order Update", {
+          description: `Order ${data.order._id.substring(0, 8)} updated to ${data.order.orderStatus}`,
+        });
+      });
 
       // Listen for new orders
       socket.on("new-order", (newOrder: Order) => {

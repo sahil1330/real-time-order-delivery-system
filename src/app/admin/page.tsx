@@ -42,7 +42,6 @@ export default function AdminDashboard() {
         if (!response.ok) throw new Error("Failed to fetch total counts");
 
         const data = await response.json();
-        console.log("Total Counts:", data);
         setCountData({
           totalCustomers: data.totalCounts.totalCustomers || 0,
           totalOrders: data.totalCounts.totalOrders || 0,

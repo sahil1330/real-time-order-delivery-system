@@ -18,7 +18,14 @@ export async function GET() {
     .select("cart");
 
   if (!cart) {
-    return new Response("Cart not found", { status: 404 });
+    return NextResponse.json(
+      {
+        message: "Cart not found",
+      },
+      {
+        status: 404,
+      }
+    );
   }
 
   return NextResponse.json(cart.cart.products, {

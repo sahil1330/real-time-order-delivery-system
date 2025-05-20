@@ -46,7 +46,6 @@ export default function UnassignedOrdersPage() {
         if (!response.ok) throw new Error("Failed to fetch unassigned orders");
 
         const data = await response.json();
-        console.log(data);
         setOrders(data);
       } catch (error) {
         console.error("Error fetching unassigned orders:", error);
@@ -62,7 +61,6 @@ export default function UnassignedOrdersPage() {
   }, []);
 
   useEffect(() => {
-    console.log("Socket", socket);
     if (socket && socket.connected) {
       // Join the delivery room to receive updates about new orders
       (async () => await joinRoom("delivery"))();

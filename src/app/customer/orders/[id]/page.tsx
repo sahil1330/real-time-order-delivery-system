@@ -126,14 +126,12 @@ export default function OrderDetailPage({
   }, [id]);
 
   useEffect(() => {
-    console.log("Socket", socket);
     if (socket && socket.connected) {
       // Join order-specific room
       (async () => await joinRoom(`order-${id}`))();
       // Listen for order status updates
       
       socket.on(`order-status-update`, (updatedOrder: any) => {
-        console.log("Order status updated:", updatedOrder.order);
         setStatusUpdates(updatedOrder.order.statusHistory || []);
         setOrder((prevOrder: any) => ({
           ...prevOrder,

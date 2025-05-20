@@ -30,8 +30,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   const sendMessage: ISocketContext["sendMessage"] = useCallback(
     (msg) => {
-      console.log("Sending message", msg);
-      console.log("Socket", socket);
       if (socket) {
         socket.emit("event:message", { message: msg });
       }

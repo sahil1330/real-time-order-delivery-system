@@ -39,14 +39,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials: any): Promise<any> {
         await dbConnect();
         try {
-          console.log("Credentials:", credentials);
           const user = await UserModel.findOne({
             email: credentials?.identifier,
           }).select(
             "-passwordResetToken -passwordResetTokenExpiry -verificationToken -verificationTokenExpiry"
           );
 
-          console.log("User found:", user);
           if (!user) {
             throw new Error("User not found");
           }
@@ -112,7 +110,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (userData._id) {
           token._id = userData._id.toString();
         } else {
-          console.log("No user ID found", user);
+          throw new Error("User ID not found");
         }
 
         // Copy other properties from user data

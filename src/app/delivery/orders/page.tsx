@@ -87,7 +87,6 @@ export default function DeliveryAssignedOrdersPage() {
                 : order
             )
           );
-          console.log("Order status updated:", data);
           // If the order is delivered, we might want to remove it from the active list
           if (data.orderStatus === "delivered") {
             setTimeout(() => {

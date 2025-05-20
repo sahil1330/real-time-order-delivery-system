@@ -65,7 +65,6 @@ export default function LiveOrderTracking() {
     };
 
     fetchActiveOrders();
-    console.log("Socket", socket);
     if (socket) {
       // Join admin room to receive updates
       (async () => await joinRoom("admin"))();
@@ -84,15 +83,15 @@ export default function LiveOrderTracking() {
               data.order.orderStatus === "cancelled"
             ) {
               return prev.filter((order) => order._id !== data.order._id);
+              
             }
-
             // Otherwise update its status
             return prev.map((order) =>
               order._id === data.order._id
                 ? {
                     ...order,
                     orderStatus: data.order.orderStatus,
-                    lastUpdated: data.order.statusHistory.timestamp,
+                    lastUpdated: data.order.statusHistory[data.order.statusHistory.length - 1].timestamp,
                   }
                 : order
             );
@@ -100,7 +99,6 @@ export default function LiveOrderTracking() {
 
           return prev;
         });
-        console.log(" Order status updated:", data);
       });
 
       // Listen for new orders

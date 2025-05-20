@@ -132,7 +132,6 @@ export default function CheckoutForm() {
       }
 
       if (socket && socket.connected) {
-        console.log("Socket connected", socket);
         socket.emit("new-order", data.order);
       }
 

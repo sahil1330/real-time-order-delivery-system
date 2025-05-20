@@ -42,7 +42,6 @@ export async function GET() {
       },
     ]);
 
-    console.log(totalRevenue);
     const totalRevenueAmount = totalRevenue[0]?.totalPrice || 0;
 
     return NextResponse.json({

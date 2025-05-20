@@ -14,13 +14,7 @@ app.prepare().then(() => {
     const httpServer: HttpServer = createServer(handler);
     const socketService = new SocketService();
     socketService.io.attach(httpServer)
-    // const io: SocketIOServer = new SocketIOServer(httpServer);
-
-    // io.on("connection", (socket: Socket) => {
-    //     // Handle socket connection
-    //     console.log("Client connected:", socket.id);
-    // });
-
+    
     httpServer
         .once("error", (err: Error) => {
             console.error(err);
