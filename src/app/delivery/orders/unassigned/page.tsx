@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-interface UnassignedOrder {
+export interface UnassignedOrder {
   _id: string;
   totalAmount: number;
   products: any[];
@@ -27,6 +27,7 @@ interface UnassignedOrder {
     state: string;
     zipCode: string;
   };
+  orderStatus: string;
   createdAt: string;
   estimatedDeliveryTime: string;
   locked: boolean;
@@ -154,7 +155,7 @@ export default function UnassignedOrdersPage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 px-2 md:px-4">
       <h1 className="text-3xl font-bold mb-8">Available Orders</h1>
 
       {orders?.length === 0 ? (

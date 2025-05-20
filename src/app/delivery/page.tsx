@@ -6,12 +6,20 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { toast } from "@/components/ui/sonner";
+import { useSocket } from "@/context/SocketProvider";
+import { DeliveryOrder } from "./orders/page";
+import { UnassignedOrder } from "./orders/unassigned/page";
 
 export default function DeliveryDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { socket, joinRoom } = useSocket();
+  const [assignedOrders, setAssignedOrders] = useState<DeliveryOrder[]>([]);
+  const [unAssignedOrders, setUnAssignedOrders] = useState<UnassignedOrder[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -25,6 +33,64 @@ export default function DeliveryDashboard() {
       setLoading(false);
     }
   }, [status, session, router]);
+
+  useEffect(() => {
+    const fetchAssignedOrders = async () => {
+      try {
+        const response = await fetch("/api/orders/delivery/assigned");
+        if (!response.ok) throw new Error("Failed to fetch assigned orders");
+
+        const data = await response.json();
+        setAssignedOrders(data.orders);
+      } catch (error) {
+        console.error("Error fetching assigned orders:", error);
+        toast("Error", {
+          description: "Failed to load your assigned orders",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchUnAssignedOrders = async () => {
+      try {
+        const response = await fetch("/api/orders/unassigned");
+        if (!response.ok) throw new Error("Failed to fetch unassigned orders");
+
+        const data = await response.json();
+        console.log("Unassigned Orders:", data);
+        setUnAssignedOrders(data);
+      } catch (error) {
+        console.error("Error fetching unassigned orders:", error);
+        toast("Error", {
+          description: "Failed to load your unassigned orders",
+        });
+      }
+    };
+
+    fetchAssignedOrders();
+    fetchUnAssignedOrders();
+  }, []);
+
+  useEffect(() => {
+    if (socket && socket.connected) {
+      // Join the delivery room to receive updates about new orders
+      (async () => await joinRoom("delivery"))();
+
+      // Listen for new unassigned orders
+      socket.on("new-unassigned-order", (newOrder: UnassignedOrder) => {
+        setUnAssignedOrders((prev) => [newOrder, ...prev]);
+
+        toast("New Order Available", {
+          description: `New order is available for pickup`,
+        });
+      });
+
+      return () => {
+        socket.off("new-unassigned-order");
+      };
+    }
+  }, [socket, joinRoom]);
 
   if (loading) {
     return (
@@ -61,32 +127,71 @@ export default function DeliveryDashboard() {
       </header> */}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Active Deliveries
-          </h2>
-          <div className="text-gray-600">
-            <p className="mb-4">You have no active deliveries at the moment.</p>
-            <div className="flex space-x-4">
-              <Button>Go Online</Button>
-              <Button variant="outline">View History</Button>
+        <div className="bg-white shadow rounded-lg p-6 mb-8 relative">
+          <div className="flex gap-4 items-center">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Active Deliveries
+            </h2>
+            <div className="viewAllOrders ">
+              <Link href="/delivery/orders">
+                <Button variant="outline" className="mb-4">
+                  View All Assigned Orders
+                </Button>
+              </Link>
             </div>
+          </div>
+          <div className="text-gray-600">
+            {assignedOrders.length < 1 ? (
+              <p className="mb-4">
+                You have no active deliveries at the moment.
+              </p>
+            ) : (
+              assignedOrders.map((order) => (
+                <div key={order._id} className="border-b py-4">
+                  <p className="font-medium">Order ID: {order._id}</p>
+                  <p>Status: {order.orderStatus}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white shadow rounded-lg p-6 relative">
             <h2 className="text-lg font-medium text-gray-900 mb-4">
               Upcoming Orders
             </h2>
-            <div className="text-gray-600">
-              <p>No upcoming orders to deliver.</p>
-              <Link
-                href="/delivery/orders/unassigned"
-                className="mt-4 inline-block"
-              >
-                <Button>View unassigned Orders</Button>
+            <div className="viewAllOrders absolute top-2 right-4">
+              <Link href="/delivery/orders/unassigned">
+                <Button variant="outline" className="mt-4">
+                  View All Unassigned Orders
+                </Button>
               </Link>
+            </div>
+            <div className="text-gray-600">
+              {unAssignedOrders.length < 1 ? (
+                <p>No upcoming orders to deliver.</p>
+              ) : (
+                unAssignedOrders.map((order) => (
+                  <div
+                    key={order._id}
+                    className="border-b py-4 flex items-center"
+                  >
+                    <div>
+                      <p className="font-medium">Order ID: {order._id}</p>
+                      <p>Status: {order.orderStatus}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+              {unAssignedOrders.length < 1 && (
+                <Link
+                  href="/delivery/orders/unassigned"
+                  className="mt-4 inline-block"
+                >
+                  <Button>View unassigned Orders</Button>
+                </Link>
+              )}
             </div>
           </div>
 

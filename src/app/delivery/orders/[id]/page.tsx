@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function DeliveryOrderDetailPage({
   params,
@@ -34,6 +35,7 @@ export default function DeliveryOrderDetailPage({
   const [loading, setLoading] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const { id } = use(params);
+  const { data: session } = useSession();
   // Status mapping for display
   const statusMap: Record<string, string> = {
     pending: "Pending",
@@ -78,7 +80,7 @@ export default function DeliveryOrderDetailPage({
     };
 
     fetchOrderDetails();
-  }, [id]);
+  }, [id, session?.user]);
 
   useEffect(() => {
     if (socket && socket.connected && id) {
@@ -210,10 +212,10 @@ export default function DeliveryOrderDetailPage({
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 md:px-4 px-2">
       <div className="mb-6 flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="md:text-3xl text-xl font-bold mb-2">
             Order #{order._id.substring(0, 8)}
           </h1>
           <p className="text-gray-500">

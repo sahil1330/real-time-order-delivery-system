@@ -4,13 +4,15 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { signOut } from "next-auth/react";
 import Link from "next/link";
+import { toast } from "@/components/ui/sonner";
+import { Order } from "./orders/page";
 
 export default function CustomerDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -26,6 +28,25 @@ export default function CustomerDashboard() {
     }
   }, [status, session, router]);
 
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch("/api/orders/customer");
+        if (!response.ok) throw new Error("Failed to fetch orders");
+
+        const data = await response.json();
+        setOrders(data.orders);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        toast.error("Failed to load your orders");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -39,27 +60,6 @@ export default function CustomerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-900">
-            Customer Dashboard
-          </h1>
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-700">
-              <span>Welcome, </span>
-              <span className="font-medium">{session?.user?.name}</span>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => signOut({ callbackUrl: "/login" })}
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white shadow rounded-lg p-6 mb-8">
           <h2 className="text-lg font-medium text-gray-900 mb-4">
@@ -80,8 +80,13 @@ export default function CustomerDashboard() {
               Your Orders
             </h2>
             <div className="text-gray-600">
-              <p className="mb-4">You haven&apos;t placed any orders yet.</p>
-              <Button variant="outline">View History</Button>
+              {orders.length < 1 ? (
+                <p className="mb-4">You haven&apos;t placed any orders yet.</p>
+              ) : (
+                <Link href="  /customer/orders">
+                  <Button variant="outline">View History</Button>
+                </Link>
+              )}
             </div>
           </div>
 

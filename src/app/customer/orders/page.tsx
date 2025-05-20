@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Home, ShoppingBag, ShoppingCart } from "lucide-react";
 
-interface Order {
+export interface Order {
   _id: string;
   orderStatus: string;
   totalAmount: number;

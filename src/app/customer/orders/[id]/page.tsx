@@ -50,7 +50,7 @@ const StatusStep = ({
         {completed ? "✓" : status}
       </div>
       <p
-        className={`mt-2 text-sm ${active || completed ? "font-medium" : "text-gray-500"}`}
+        className={`mt-2 md:text-sm text-xs ${active || completed ? "font-medium" : "text-gray-500"}`}
       >
         {label}
       </p>
@@ -131,7 +131,7 @@ export default function OrderDetailPage({
       // Join order-specific room
       (async () => await joinRoom(`order-${id}`))();
       // Listen for order status updates
-      
+
       socket.on(`order-status-update`, (updatedOrder: any) => {
         setStatusUpdates(updatedOrder.order.statusHistory || []);
         setOrder((prevOrder: any) => ({
@@ -253,11 +253,11 @@ export default function OrderDetailPage({
               Back to Orders
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">
+          <h1 className="md:text-2xl text-md font-bold">
             Order #{order._id.substring(0, 8)}
           </h1>
         </div>
-        <div className="flex space-x-2">
+        <div className="md:flex space-x-2 hidden">
           <Link href="/">
             <Button variant="outline" size="sm">
               <Home className="mr-2 h-4 w-4" />
@@ -289,7 +289,7 @@ export default function OrderDetailPage({
           <CardTitle>Order Progress</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-between w-full px-6 py-4">
+          <div className="flex justify-between w-full md:px-6 py-4">
             {statusSteps.map((step, index) => (
               <StatusStep
                 key={step.key}

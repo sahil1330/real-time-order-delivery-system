@@ -12,7 +12,7 @@ function Layout({ children }: { children: React.ReactNode }): React.ReactNode {
   }, [session?.user]);
   return (
     <div>
-      <Navbar user={user} title={"Delivery Dashboard"} />
+      <Navbar user={user} title={"Customer Dashboard"} />
       {children}
     </div>
   );

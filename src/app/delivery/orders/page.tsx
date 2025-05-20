@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface DeliveryOrder {
+export interface DeliveryOrder {
   _id: string;
   orderStatus: string;
   totalAmount: number;
@@ -202,7 +202,7 @@ export default function DeliveryAssignedOrdersPage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 px-2 md:px-4">
       <h1 className="text-3xl font-bold mb-8">Your Assigned Orders</h1>
 
       {orders.length === 0 ? (
