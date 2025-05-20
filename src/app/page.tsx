@@ -7,14 +7,13 @@ import { Minus, Plus, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { User } from "next-auth";
-import Link from "next/link";
 import { IProduct } from "@/models/product.model";
 import HomePageSkeleton from "@/components/skeltons/HomePageSkeleton";
 import { useRouter } from "next/navigation";
+import Navbar from "@/components/common/Navbar";
 export default function Home() {
   const { data: session } = useSession();
-  const [isUserSession, setIsUserSession] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | undefined>(session?.user);
   const [cart, setCart] = useState<any[]>([]);
   const [productsInCart, setProductsInCart] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +23,6 @@ export default function Home() {
     (async () => {
       fetchProducts();
       if (session?.user._id) {
-        setIsUserSession(true);
         setUser(session.user);
         await fetchCart();
       }
@@ -161,54 +159,7 @@ export default function Home() {
 
   return (
     <div>
-      {" "}
-      {isUserSession ? (
-        <header className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-900">Real Time Order</h1>
-            <div className="flex items-center space-x-4">
-              <Link href="/customer/cart">
-                <Button variant="ghost" size="sm" className="relative">
-                  <ShoppingCart className="h-5 w-5" />
-                  {cart.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {cart.reduce((total, item) => total + item.quantity, 0)}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-              <div className="text-sm text-gray-700">
-                <span>Welcome, </span>
-                <span className="font-medium">{user?.name}</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => signOut({ callbackUrl: "/login" })}
-              >
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </header>
-      ) : (
-        <header className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 className="text-xl font-bold text-gray-900">Real Time Order</h1>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-700">
-                <span>Welcome, </span>
-                <span className="font-medium">Guest</span>
-              </div>
-              <Link href={"/login"}>
-                <Button variant="outline" size="sm">
-                  Sign In
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </header>
-      )}
+      <Navbar user={user} cart={cart} title="Real Time Order" />
       {isLoading ? (
         <HomePageSkeleton />
       ) : (
