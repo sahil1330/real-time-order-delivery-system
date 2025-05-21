@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Server } from "socket.io";
+import { Server } from "socket.io"; 
+import { createAdapter } from '@socket.io/cluster-adapter';
 class SocketService {
   private _io: Server;
   constructor() {
@@ -9,6 +10,7 @@ class SocketService {
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
         credentials: true,
       },
+      adapter: createAdapter()
     });
   }
 
