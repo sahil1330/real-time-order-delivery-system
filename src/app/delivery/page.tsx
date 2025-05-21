@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/sonner";
 import { useSocket } from "@/context/SocketProvider";
 import { DeliveryOrder } from "./orders/page";
 import { UnassignedOrder } from "./orders/unassigned/page";
+import { SheetModel } from "@/components/SheetModel";
 
 export default function DeliveryDashboard() {
   const { data: session, status } = useSession();
@@ -216,7 +217,7 @@ export default function DeliveryDashboard() {
                   <span>Active</span>
                 </Badge>
               </p>
-              <Button variant="outline">Edit Profile</Button>
+              <SheetModel user={session?.user} />
             </div>
           </div>
         </div>

@@ -107,7 +107,6 @@ export default function CustomerDashboard() {
                 <span className="font-medium">Account Type:</span> Customer
               </p>
               <SheetModel user={session?.user} />
-              <Button variant="outline">Edit Profile</Button>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,7 +28,25 @@ type FormData = {
   confirmPassword: string;
 };
 
-export default function ResetPasswordPage() {
+// Loading fallback for Suspense
+function ResetPasswordLoading() {
+  return (
+    <div className="container flex min-h-screen items-center justify-center py-12 w-full mx-auto">
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">Loading...</CardTitle>
+          <CardDescription>Please wait while we load the form</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 h-64 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Separate component that uses useSearchParams
+function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const searchParams = useSearchParams();
@@ -251,5 +269,14 @@ export default function ResetPasswordPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+// Main page component that uses Suspense
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<ResetPasswordLoading />}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
