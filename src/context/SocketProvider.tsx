@@ -39,8 +39,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   const joinRoom: ISocketContext["joinRoom"] = useCallback(
     (room) => {
-      console.log("Joining room", room);
-      console.log("Socket in provider", socket);
       if (socket) {
         socket.emit("join-room", room);
       }
@@ -50,7 +48,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
   const leaveRoom: ISocketContext["leaveRoom"] = useCallback(
     (room) => {
-      console.log("Leaving room", room);
       if (socket) {
         socket.emit("leave-room", room);
       }
@@ -61,7 +58,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const sendMessageOrderAccepted: ISocketContext["sendMessageOrderAccepted"] =
     useCallback(
       (order) => {
-        console.log("Sending order accepted message", order);
         if (socket) {
           socket.emit("order-accepted", { order });
         }
@@ -72,12 +68,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const sendMessageOrderUpdate: ISocketContext["sendMessageOrderUpdate"] =
     useCallback(
       (order) => {
-        console.log(
-          "Sending order update message",
-          order,
-          "\nSocket for update: ",
-          socket
-        );
         if (socket) {
           socket.emit("update-order", { order });
         }
@@ -89,13 +79,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     const _socket = io();
     setSocket(_socket);
     _socket.on("connect", () => {
-      console.log("Socket connected");
     });
 
     return () => {
       _socket.disconnect();
       setSocket(undefined);
-      console.log("Socket disconnected");
     };
   }, []);
   return (

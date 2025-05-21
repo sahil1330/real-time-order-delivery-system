@@ -58,7 +58,6 @@ export default function DeliveryDashboard() {
         if (!response.ok) throw new Error("Failed to fetch unassigned orders");
 
         const data = await response.json();
-        console.log("Unassigned Orders:", data);
         setUnAssignedOrders(data);
       } catch (error) {
         console.error("Error fetching unassigned orders:", error);

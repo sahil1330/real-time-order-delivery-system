@@ -111,7 +111,6 @@ export default function OrderDetailPage({
 
         const data = await response.json();
         setOrder(data.order);
-        console.log("Order Details:", data);
         setStatusUpdates(data.order.statusHistory || []);
         setLoading(false);
       } catch (error) {

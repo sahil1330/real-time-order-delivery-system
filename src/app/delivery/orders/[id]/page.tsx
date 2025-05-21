@@ -94,7 +94,6 @@ export default function DeliveryOrderDetailPage({
           orderStatus: updatedOrder.order.orderStatus,
           statusHistory: updatedOrder.order.statusHistory,
         }));
-        console.log("Order status updated", updatedOrder.order);
         toast("Order Update", {
           description: `Order status updated to ${updatedOrder.order.orderStatus}`,
         });
@@ -131,10 +130,8 @@ export default function DeliveryOrderDetailPage({
       }
 
       // Emit the status update to the socket
-      console.log("Socket here", socket);
       if (socket && socket.connected) {
         await joinRoom(`order-${data.order._id}`);
-        console.log("Emitting order status update ", data.order);
         // socket.emit("update-order", data.order);
         await sendMessageOrderUpdate(data.order);
       }

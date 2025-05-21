@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/sonner";
 import {
   Sheet,
   SheetContent,
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { User } from "next-auth";
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
