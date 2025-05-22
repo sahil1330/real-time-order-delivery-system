@@ -7,7 +7,7 @@
     "dev": "next dev",
     "server": "node --experimental-strip-types src/server.ts",
     "build": "next build",
-    "start": "cross-env NODE_ENV=production node --loader ts-node/esm src/server.ts",
+    "start": "NODE_ENV=production node --experimental-strip-types src/server.ts",
     "start:server": "cross-env NODE_ENV=production tsx src/server.ts",
     "lint": "next lint"
   },
@@ -47,7 +47,8 @@
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.24.4"
+    "zod": "^3.24.4",
+    "cross-env": "^7.0.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -55,7 +56,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "cross-env": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4",

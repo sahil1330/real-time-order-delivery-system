@@ -76,10 +76,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     );
 
   useEffect(() => {
-    const _socket = io();
-    setSocket(_socket);
-    _socket.on("connect", () => {
+    const _socket = io("", {
+      transports: ["websocket"],
+      autoConnect: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
     });
+    setSocket(_socket);
+    _socket.on("connect", () => {});
 
     return () => {
       _socket.disconnect();
